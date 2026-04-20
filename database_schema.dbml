@@ -1,4 +1,4 @@
-// ER-диаграмма для проекта интернет-магазина
+// ER-диаграмма для SoundCloudd - музыкальной платформы
 // Можно скопировать и вставить на https://dbdiagram.io/
 
 Table User {
@@ -12,117 +12,153 @@ Table User {
   Note: 'Встроенная модель Django'
 }
 
-Table Category {
+Table Profile {
   id integer [primary key]
-  name varchar(200) [not null]
-  slug varchar(200) [unique, not null]
-  description text
+  user_id integer [ref: - User.id, not null]
+  bio text
+  avatar varchar
+  location varchar(100)
+  website varchar
   created_at datetime [default: `now()`]
   updated_at datetime [default: `now()`]
+  Note: 'Профиль пользователя (артиста)'
+}
+
+Table Genre {
+  id integer [primary key]
+  name varchar(50) [unique, not null]
+  slug varchar(50) [unique, not null]
+  description text
+  created_at datetime [default: `now()`]
 
   indexes {
     name
   }
-  Note: 'Категория товаров'
+  Note: 'Музыкальный жанр'
 }
 
-Table Product {
+Table Track {
+  id integer [primary key]
+  title varchar(200) [not null]
+  slug varchar(200) [unique, not null]
+  author_id integer [ref: > User.id, not null]
+  audio_file varchar [not null]
+  cover varchar
+  description text
+  duration interval
+  genre_id integer [ref: > Genre.id]
+  plays_count integer [default: 0]
+  downloads_allowed boolean [default: false]
+  is_public boolean [default: true]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+
+  indexes {
+    author_id
+    genre_id
+    created_at
+    plays_count
+  }
+  Note: 'Музыкальный трек'
+}
+
+Table Comment {
+  id integer [primary key]
+  track_id integer [ref: > Track.id, not null]
+  user_id integer [ref: > User.id, not null]
+  text text [not null]
+  timestamp integer
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+
+  indexes {
+    (track_id, created_at)
+  }
+  Note: 'Комментарий к треку. timestamp - момент трека в секундах'
+}
+
+Table Like {
+  id integer [primary key]
+  track_id integer [ref: > Track.id, not null]
+  user_id integer [ref: > User.id, not null]
+  created_at datetime [default: `now()`]
+
+  indexes {
+    track_id
+    (user_id, track_id) [unique]
+  }
+  Note: 'Лайк трека. Один пользователь - один лайк на трек'
+}
+
+Table Playlist {
   id integer [primary key]
   name varchar(200) [not null]
-  slug varchar(200) [unique, not null]
-  description text [not null]
-  price decimal(10,2) [not null]
-  stock integer [not null, default: 0]
-  available boolean [default: true]
-  category_id integer [ref: > Category.id, not null]
-  image varchar
-  created_by_id integer [ref: > User.id]
-  created_at datetime [default: `now()`]
-  updated_at datetime [default: `now()`]
-
-  indexes {
-    (available, category_id)
-    created_at
-  }
-  Note: 'Товар в каталоге'
-}
-
-Table Order {
-  id integer [primary key]
+  slug varchar(200) [not null]
   user_id integer [ref: > User.id, not null]
-  first_name varchar(100) [not null]
-  last_name varchar(100) [not null]
-  email varchar [not null]
-  address varchar(250) [not null]
-  postal_code varchar(20) [not null]
-  city varchar(100) [not null]
-  created_at datetime [default: `now()`]
-  updated_at datetime [default: `now()`]
-  paid boolean [default: false]
-  status varchar(20) [default: 'new']
-
-  indexes {
-    (user_id, created_at)
-  }
-  Note: 'Заказ покупателя. Статусы: new, processing, shipped, delivered, cancelled'
-}
-
-Table OrderItem {
-  id integer [primary key]
-  order_id integer [ref: > Order.id, not null]
-  product_id integer [ref: > Product.id, not null]
-  price decimal(10,2) [not null]
-  quantity integer [not null, default: 1]
-
-  Note: 'Позиция заказа (товар + количество)'
-}
-
-Table Review {
-  id integer [primary key]
-  product_id integer [ref: > Product.id, not null]
-  user_id integer [ref: > User.id, not null]
-  rating integer [not null]
-  comment text [not null]
+  description text
+  cover varchar
+  is_public boolean [default: true]
   created_at datetime [default: `now()`]
   updated_at datetime [default: `now()`]
 
   indexes {
-    (product_id, created_at)
-    (user_id, product_id) [unique]
+    user_id
   }
-  Note: 'Отзыв на товар. Рейтинг от 1 до 5. Один пользователь - один отзыв на товар'
+  Note: 'Плейлист пользователя'
 }
 
-Table Cart {
+Table PlaylistTrack {
   id integer [primary key]
-  user_id integer [ref: - User.id]
-  session_key varchar(40)
-  created_at datetime [default: `now()`]
-  updated_at datetime [default: `now()`]
-
-  Note: 'Корзина покупок. Может быть привязана к пользователю или к сессии (для анонимов)'
-}
-
-Table CartItem {
-  id integer [primary key]
-  cart_id integer [ref: > Cart.id, not null]
-  product_id integer [ref: > Product.id, not null]
-  quantity integer [not null, default: 1]
+  playlist_id integer [ref: > Playlist.id, not null]
+  track_id integer [ref: > Track.id, not null]
+  order integer [default: 0]
+  added_at datetime [default: `now()`]
 
   indexes {
-    (cart_id, product_id) [unique]
+    (playlist_id, track_id) [unique]
   }
-  Note: 'Позиция корзины'
+  Note: 'Связь плейлиста и трека. order - порядок в плейлисте'
+}
+
+Table Follow {
+  id integer [primary key]
+  follower_id integer [ref: > User.id, not null]
+  following_id integer [ref: > User.id, not null]
+  created_at datetime [default: `now()`]
+
+  indexes {
+    follower_id
+    following_id
+    (follower_id, following_id) [unique]
+  }
+  Note: 'Подписка на пользователя. follower подписан на following'
+}
+
+Table Play {
+  id integer [primary key]
+  track_id integer [ref: > Track.id, not null]
+  user_id integer [ref: > User.id]
+  ip_address varchar
+  played_at datetime [default: `now()`]
+
+  indexes {
+    (track_id, played_at)
+  }
+  Note: 'История прослушиваний. user_id может быть null для анонимных'
 }
 
 // Связи (для наглядности):
-// User 1:N Product (created_by)
-// User 1:N Order
-// User 1:N Review
-// User 1:1 Cart
-// Category 1:N Product
-// Product 1:N OrderItem
-// Product 1:N Review
-// Product 1:N CartItem
-// Order 1:N OrderItem
-// Cart 1:N CartItem
+// User 1:1 Profile
+// User 1:N Track (author)
+// User 1:N Comment
+// User 1:N Like
+// User 1:N Playlist
+// User 1:N Follow (follower)
+// User 1:N Follow (following)
+// User 1:N Play
+// Genre 1:N Track
+// Track 1:N Comment
+// Track 1:N Like
+// Track 1:N PlaylistTrack
+// Track 1:N Play
+// Playlist 1:N PlaylistTrack

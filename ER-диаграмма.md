@@ -1,7 +1,7 @@
-# Проектирование моделей данных для Django-проекта
+# Проектирование моделей данных для SoundCloudd
 
 ## Описание проекта
-Веб-приложение для управления каталогом товаров (интернет-магазин)
+SoundCloudd - веб-платформа для загрузки и прослушивания музыки, вдохновлённая SoundCloud
 
 ## Сущности (модели)
 
@@ -15,84 +15,103 @@
 - last_name
 - date_joined
 
-### 2. Category (Категория товаров)
+### 2. Profile (Профиль пользователя)
 - id (PK)
-- name (CharField, max_length=200) - название категории
-- slug (SlugField, unique=True) - URL-friendly название
-- description (TextField, blank=True) - описание категории
+- user (OneToOneField → User) - связь с пользователем
+- bio (TextField, blank=True) - биография артиста
+- avatar (ImageField, blank=True) - аватар
+- location (CharField, max_length=100, blank=True) - местоположение
+- website (URLField, blank=True) - веб-сайт артиста
 - created_at (DateTimeField, auto_now_add=True)
 - updated_at (DateTimeField, auto_now=True)
 
-### 3. Product (Товар)
+### 3. Genre (Жанр)
 - id (PK)
-- name (CharField, max_length=200) - название товара
+- name (CharField, max_length=50, unique=True) - название жанра
 - slug (SlugField, unique=True)
-- description (TextField) - описание товара
-- price (DecimalField, max_digits=10, decimal_places=2) - цена
-- stock (PositiveIntegerField) - количество на складе
-- available (BooleanField, default=True) - доступен для заказа
-- category (ForeignKey → Category) - категория товара
-- image (ImageField, blank=True) - изображение товара
-- created_by (ForeignKey → User) - кто добавил товар
+- description (TextField, blank=True)
+- created_at (DateTimeField, auto_now_add=True)
+
+### 4. Track (Трек)
+- id (PK)
+- title (CharField, max_length=200) - название трека
+- slug (SlugField, unique=True)
+- author (ForeignKey → User) - автор трека
+- audio_file (FileField) - аудиофайл (MP3, WAV)
+- cover (ImageField, blank=True) - обложка трека
+- description (TextField, blank=True) - описание
+- duration (DurationField, null=True) - длительность трека
+- genre (ForeignKey → Genre, null=True, blank=True) - жанр
+- plays_count (PositiveIntegerField, default=0) - количество прослушиваний
+- downloads_allowed (BooleanField, default=False) - разрешено ли скачивание
+- is_public (BooleanField, default=True) - публичный ли трек
 - created_at (DateTimeField, auto_now_add=True)
 - updated_at (DateTimeField, auto_now=True)
 
-### 4. Order (Заказ)
+### 5. Comment (Комментарий)
 - id (PK)
-- user (ForeignKey → User) - покупатель
-- first_name (CharField, max_length=100)
-- last_name (CharField, max_length=100)
-- email (EmailField)
-- address (CharField, max_length=250)
-- postal_code (CharField, max_length=20)
-- city (CharField, max_length=100)
-- created_at (DateTimeField, auto_now_add=True)
-- updated_at (DateTimeField, auto_now=True)
-- paid (BooleanField, default=False) - оплачен ли заказ
-- status (CharField, choices) - статус заказа (новый, в обработке, отправлен, доставлен)
-
-### 5. OrderItem (Позиция заказа)
-- id (PK)
-- order (ForeignKey → Order) - заказ
-- product (ForeignKey → Product) - товар
-- price (DecimalField, max_digits=10, decimal_places=2) - цена на момент заказа
-- quantity (PositiveIntegerField) - количество
-
-### 6. Review (Отзыв)
-- id (PK)
-- product (ForeignKey → Product) - товар
-- user (ForeignKey → User) - автор отзыва
-- rating (PositiveSmallIntegerField, choices=1-5) - оценка
-- comment (TextField) - текст отзыва
+- track (ForeignKey → Track) - трек
+- user (ForeignKey → User) - автор комментария
+- text (TextField) - текст комментария
+- timestamp (PositiveIntegerField, null=True, blank=True) - момент трека в секундах
 - created_at (DateTimeField, auto_now_add=True)
 - updated_at (DateTimeField, auto_now=True)
 
-### 7. Cart (Корзина)
+### 6. Like (Лайк)
 - id (PK)
+- track (ForeignKey → Track) - трек
+- user (ForeignKey → User) - пользователь
+- created_at (DateTimeField, auto_now_add=True)
+
+### 7. Playlist (Плейлист)
+- id (PK)
+- name (CharField, max_length=200) - название плейлиста
+- slug (SlugField)
+- user (ForeignKey → User) - владелец плейлиста
+- description (TextField, blank=True)
+- cover (ImageField, blank=True) - обложка плейлиста
+- is_public (BooleanField, default=True) - публичный ли плейлист
+- created_at (DateTimeField, auto_now_add=True)
+- updated_at (DateTimeField, auto_now=True)
+
+### 8. PlaylistTrack (Связь плейлиста и трека)
+- id (PK)
+- playlist (ForeignKey → Playlist) - плейлист
+- track (ForeignKey → Track) - трек
+- order (PositiveIntegerField, default=0) - порядок трека в плейлисте
+- added_at (DateTimeField, auto_now_add=True)
+
+### 9. Follow (Подписка)
+- id (PK)
+- follower (ForeignKey → User) - подписчик
+- following (ForeignKey → User) - на кого подписан
+- created_at (DateTimeField, auto_now_add=True)
+
+### 10. Play (История прослушиваний)
+- id (PK)
+- track (ForeignKey → Track) - трек
 - user (ForeignKey → User, null=True, blank=True) - пользователь (может быть анонимным)
-- session_key (CharField, max_length=40, null=True) - для анонимных пользователей
-- created_at (DateTimeField, auto_now_add=True)
-- updated_at (DateTimeField, auto_now=True)
-
-### 8. CartItem (Позиция корзины)
-- id (PK)
-- cart (ForeignKey → Cart) - корзина
-- product (ForeignKey → Product) - товар
-- quantity (PositiveIntegerField) - количество
+- ip_address (GenericIPAddressField, null=True) - IP для анонимных
+- played_at (DateTimeField, auto_now_add=True)
 
 ## Связи между моделями
 
+### One-to-One (1:1):
+1. **User → Profile** (у каждого пользователя один профиль)
+
 ### One-to-Many (ForeignKey):
-1. **Category → Product** (одна категория содержит много товаров)
-2. **User → Product** (один пользователь может добавить много товаров)
-3. **User → Order** (один пользователь может сделать много заказов)
-4. **Order → OrderItem** (один заказ содержит много позиций)
-5. **Product → OrderItem** (один товар может быть в разных заказах)
-6. **Product → Review** (у одного товара может быть много отзывов)
-7. **User → Review** (один пользователь может оставить много отзывов)
-8. **User → Cart** (у пользователя одна корзина)
-9. **Cart → CartItem** (корзина содержит много позиций)
-10. **Product → CartItem** (товар может быть в разных корзинах)
+1. **User → Track** (пользователь может загрузить много треков)
+2. **Genre → Track** (жанр содержит много треков)
+3. **Track → Comment** (у трека может быть много комментариев)
+4. **User → Comment** (пользователь может оставить много комментариев)
+5. **Track → Like** (у трека может быть много лайков)
+6. **User → Like** (пользователь может лайкнуть много треков)
+7. **User → Playlist** (пользователь может создать много плейлистов)
+8. **Playlist → PlaylistTrack** (плейлист содержит много треков)
+9. **Track → PlaylistTrack** (трек может быть в разных плейлистах)
+10. **User → Follow** (пользователь может подписаться на многих)
+11. **Track → Play** (у трека много прослушиваний)
+12. **User → Play** (пользователь прослушал много треков)
 
 ## ER-диаграмма (текстовое представление)
 
@@ -102,24 +121,36 @@
 │  (Django)   │
 └──────┬──────┘
        │
+       │ 1:1
+       ▼
+┌─────────────┐
+│   Profile   │
+│             │
+│    user     │
+└─────────────┘
+
+┌─────────────┐
+│    User     │
+└──────┬──────┘
+       │
        │ 1:N
        ├──────────────────┐
        │                  │
        ▼                  ▼
 ┌─────────────┐    ┌─────────────┐
-│   Product   │    │    Order    │
+│    Track    │    │  Playlist   │
 │             │    │             │
-│ created_by  │    │    user     │
+│   author    │    │    user     │
 └──────┬──────┘    └──────┬──────┘
        │                  │
        │ N:1              │ 1:N
        ▼                  ▼
-┌─────────────┐    ┌─────────────┐
-│  Category   │    │  OrderItem  │
-│             │    │             │
-└─────────────┘    │   order     │
-                   │   product   │
-                   └─────────────┘
+┌─────────────┐    ┌──────────────┐
+│    Genre    │    │PlaylistTrack │
+│             │    │              │
+└─────────────┘    │  playlist    │
+                   │   track      │
+                   └──────────────┘
 
 ┌─────────────┐
 │    User     │
@@ -127,94 +158,124 @@
        │ 1:N
        ▼
 ┌─────────────┐
-│   Review    │
+│   Comment   │
 │             │
 │    user     │
-│   product   │
+│   track     │
 └──────┬──────┘
        │ N:1
        ▼
 ┌─────────────┐
-│   Product   │
+│    Track    │
 └─────────────┘
 
 ┌─────────────┐
 │    User     │
 └──────┬──────┘
-       │ 1:1
-       ▼
-┌─────────────┐
-│    Cart     │
-│             │
-│    user     │
-└──────┬──────┘
        │ 1:N
        ▼
 ┌─────────────┐
-│  CartItem   │
+│    Like     │
 │             │
-│    cart     │
-│   product   │
+│    user     │
+│   track     │
 └──────┬──────┘
        │ N:1
        ▼
 ┌─────────────┐
-│   Product   │
+│    Track    │
 └─────────────┘
+
+┌─────────────┐
+│    User     │
+└──────┬──────┘
+       │
+       ├─────────┐
+       │         │
+       ▼         ▼
+    follower  following
+       │         │
+       └────┬────┘
+            ▼
+      ┌─────────────┐
+      │   Follow    │
+      └─────────────┘
 ```
 
 ## Индексы и ограничения
 
 ### Уникальные ограничения:
-- Category.slug - уникальный
-- Product.slug - уникальный
+- Profile.user - уникальный (OneToOne)
+- Genre.name - уникальный
+- Genre.slug - уникальный
+- Track.slug - уникальный
+- Like: уникальная пара (user, track) - один пользователь может лайкнуть трек только один раз
+- Follow: уникальная пара (follower, following) - нельзя подписаться дважды
 
 ### Составные уникальные ограничения:
-- Review: уникальная пара (user, product) - один пользователь может оставить только один отзыв на товар
+- PlaylistTrack: уникальная пара (playlist, track) - трек не может быть дважды в одном плейлисте
 
 ### Индексы для оптимизации:
-- Product.category (ForeignKey автоматически создаёт индекс)
-- Product.available + Product.category (для фильтрации доступных товаров)
-- Order.user + Order.created_at (для истории заказов)
-- Review.product (для быстрого получения отзывов)
+- Track.author (ForeignKey автоматически создаёт индекс)
+- Track.genre (ForeignKey автоматически создаёт индекс)
+- Track.created_at (для сортировки новых треков)
+- Track.plays_count (для популярных треков)
+- Comment.track + Comment.created_at (для получения комментариев)
+- Like.track (для подсчёта лайков)
+- Playlist.user (для получения плейлистов пользователя)
+- Follow.follower (для получения подписок)
+- Follow.following (для получения подписчиков)
+- Play.track + Play.played_at (для статистики)
 
 ## Валидация данных
 
-### Product:
-- price > 0
-- stock >= 0
-- name не пустое
+### Track:
+- audio_file: только MP3, WAV форматы
+- duration > 0
+- title не пустое
 
-### Review:
-- rating от 1 до 5
-- один отзыв от пользователя на товар
+### Comment:
+- text не пустое
+- timestamp >= 0 и <= длительности трека
 
-### OrderItem:
-- quantity > 0
-- price > 0
+### PlaylistTrack:
+- order >= 0
 
-### CartItem:
-- quantity > 0
+### Follow:
+- follower != following (нельзя подписаться на себя)
 
 ## Методы моделей
 
-### Product:
-- `get_absolute_url()` - URL товара
-- `get_average_rating()` - средняя оценка
-- `get_reviews_count()` - количество отзывов
+### Profile:
+- `get_absolute_url()` - URL профиля
+- `get_followers_count()` - количество подписчиков
+- `get_following_count()` - количество подписок
 
-### Order:
-- `get_total_cost()` - общая стоимость заказа
+### Track:
+- `get_absolute_url()` - URL трека
+- `get_likes_count()` - количество лайков
+- `get_comments_count()` - количество комментариев
+- `increment_plays()` - увеличить счётчик прослушиваний
+- `is_liked_by(user)` - лайкнул ли пользователь трек
 
-### Cart:
-- `get_total_cost()` - общая стоимость корзины
-- `clear()` - очистить корзину
+### Playlist:
+- `get_absolute_url()` - URL плейлиста
+- `get_tracks_count()` - количество треков
+- `get_duration()` - общая длительность плейлиста
+
+### User (через Profile):
+- `get_tracks_count()` - количество треков пользователя
+- `get_total_plays()` - общее количество прослушиваний всех треков
 
 ## Примечания для реализации
 
 1. Использовать `django.contrib.auth` для User
-2. Для изображений установить `Pillow`
-3. Настроить `MEDIA_ROOT` и `MEDIA_URL` для загрузки изображений
-4. Использовать `django-cleanup` для автоматического удаления файлов
-5. Добавить `__str__()` методы для всех моделей
-6. Использовать `select_related()` и `prefetch_related()` для оптимизации запросов
+2. Для аудиофайлов установить `mutagen` для чтения метаданных
+3. Для изображений установить `Pillow`
+4. Настроить `MEDIA_ROOT` и `MEDIA_URL` для загрузки файлов
+5. Использовать `django-cleanup` для автоматического удаления файлов
+6. Добавить `__str__()` методы для всех моделей
+7. Использовать `select_related()` и `prefetch_related()` для оптимизации запросов
+8. Для аудиоплеера использовать Howler.js или HTML5 Audio API
+9. Для визуализации волны использовать WaveSurfer.js (опционально)
+10. Добавить сигналы для автоматического создания Profile при регистрации User
