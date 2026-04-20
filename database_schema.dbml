@@ -1,0 +1,128 @@
+// ER-диаграмма для проекта интернет-магазина
+// Можно скопировать и вставить на https://dbdiagram.io/
+
+Table User {
+  id integer [primary key]
+  username varchar
+  email varchar
+  password varchar
+  first_name varchar
+  last_name varchar
+  date_joined datetime
+  Note: 'Встроенная модель Django'
+}
+
+Table Category {
+  id integer [primary key]
+  name varchar(200) [not null]
+  slug varchar(200) [unique, not null]
+  description text
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+
+  indexes {
+    name
+  }
+  Note: 'Категория товаров'
+}
+
+Table Product {
+  id integer [primary key]
+  name varchar(200) [not null]
+  slug varchar(200) [unique, not null]
+  description text [not null]
+  price decimal(10,2) [not null]
+  stock integer [not null, default: 0]
+  available boolean [default: true]
+  category_id integer [ref: > Category.id, not null]
+  image varchar
+  created_by_id integer [ref: > User.id]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+
+  indexes {
+    (available, category_id)
+    created_at
+  }
+  Note: 'Товар в каталоге'
+}
+
+Table Order {
+  id integer [primary key]
+  user_id integer [ref: > User.id, not null]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  email varchar [not null]
+  address varchar(250) [not null]
+  postal_code varchar(20) [not null]
+  city varchar(100) [not null]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+  paid boolean [default: false]
+  status varchar(20) [default: 'new']
+
+  indexes {
+    (user_id, created_at)
+  }
+  Note: 'Заказ покупателя. Статусы: new, processing, shipped, delivered, cancelled'
+}
+
+Table OrderItem {
+  id integer [primary key]
+  order_id integer [ref: > Order.id, not null]
+  product_id integer [ref: > Product.id, not null]
+  price decimal(10,2) [not null]
+  quantity integer [not null, default: 1]
+
+  Note: 'Позиция заказа (товар + количество)'
+}
+
+Table Review {
+  id integer [primary key]
+  product_id integer [ref: > Product.id, not null]
+  user_id integer [ref: > User.id, not null]
+  rating integer [not null]
+  comment text [not null]
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+
+  indexes {
+    (product_id, created_at)
+    (user_id, product_id) [unique]
+  }
+  Note: 'Отзыв на товар. Рейтинг от 1 до 5. Один пользователь - один отзыв на товар'
+}
+
+Table Cart {
+  id integer [primary key]
+  user_id integer [ref: - User.id]
+  session_key varchar(40)
+  created_at datetime [default: `now()`]
+  updated_at datetime [default: `now()`]
+
+  Note: 'Корзина покупок. Может быть привязана к пользователю или к сессии (для анонимов)'
+}
+
+Table CartItem {
+  id integer [primary key]
+  cart_id integer [ref: > Cart.id, not null]
+  product_id integer [ref: > Product.id, not null]
+  quantity integer [not null, default: 1]
+
+  indexes {
+    (cart_id, product_id) [unique]
+  }
+  Note: 'Позиция корзины'
+}
+
+// Связи (для наглядности):
+// User 1:N Product (created_by)
+// User 1:N Order
+// User 1:N Review
+// User 1:1 Cart
+// Category 1:N Product
+// Product 1:N OrderItem
+// Product 1:N Review
+// Product 1:N CartItem
+// Order 1:N OrderItem
+// Cart 1:N CartItem
