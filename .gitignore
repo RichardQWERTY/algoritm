@@ -1,2 +1,4 @@
 venv/
+muspro/venv/
 *.pyc
+db.sqlite3
