@@ -1,0 +1,96 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ profile.user.username }} — echoOfSound{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- Верхняя часть профиля -->
+    <div style="background: linear-gradient(#4B0082, #2a004d); padding: 20px; border: 4px solid #00ff9f; margin-bottom: 20px;">
+        <div class="d-flex flex-wrap align-items-start gap-4">
+            
+            <!-- Аватар -->
+            <div>
+                <img src="{{ profile.avatar.url|default:'https://via.placeholder.com/250/4B0082/00ff9f?text=AVATAR' }}" 
+                     class="border border-4 border-light shadow" 
+                     width="250" height="250" alt="avatar">
+            </div>
+
+            <!-- Информация -->
+            <div style="flex: 1;">
+                <h1 class="neon-text" style="font-size: 2.8rem; margin-bottom: 5px;">
+                    {{ profile.user.first_name }} {{ profile.user.last_name }}
+                </h1>
+                <h3 style="color: #00ff9f; margin-bottom: 15px;">
+                    @{{ profile.user.username }}
+                </h3>
+                
+                <p><strong>Location:</strong> {{ profile.location|default:"Не указано" }}</p>
+                {% if profile.website %}
+                    <p><strong>Website:</strong> 
+                        <a href="{{ profile.website }}" target="_blank" style="color:#ff00ff;">{{ profile.website }}</a>
+                    </p>
+                {% endif %}
+
+                <p><strong>Joined:</strong> {{ profile.created_at|date:"d.m.Y" }}</p>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div>
+                <button class="btn btn-outline-light btn-lg mb-2" style="width: 180px;">
+                    <i class="bi bi-person-plus"></i> Add to Friends
+                </button>
+                <button class="btn btn-danger btn-lg mb-2" style="width: 180px;">
+                    Send Message
+                </button>
+                <button class="btn btn-outline-success btn-lg" style="width: 180px;">
+                    <i class="bi bi-headphones"></i> Play Track
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BIO -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div style="background:rgba(0,0,0,0.8); padding:20px; border:3px solid #9F00FF;">
+                <h2 class="neon-text">ABOUT ME</h2>
+                <p style="font-size: 1.1rem; line-height: 1.6;">
+                    {{ profile.bio|default:"Этот пользователь пока ничего не рассказал о себе..." }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="col-lg-4">
+            <div style="background:rgba(0,0,0,0.8); padding:20px; border:3px solid #00ff9f;">
+                <h2 style="color:#00ff9f;">STATS</h2>
+                <ul style="list-style:none; padding:0;">
+                    <li><strong>Tracks uploaded:</strong> 12</li>
+                    <li><strong>Playlists:</strong> 7</li>
+                    <li><strong>Followers:</strong> 248</li>
+                    <li><strong>Following:</strong> 89</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние треки пользователя -->
+    <div class="mt-5">
+        <h2 class="neon-text">LAST UPLOADS</h2>
+        <div class="row">
+            <!-- Здесь можно будет выводить треки пользователя через цикл -->
+            <div class="col-md-4 mb-4">
+                <div style="background:#1a0033; padding:10px; border:2px solid #ff00ff;">
+                    <img src="https://via.placeholder.com/300x150" class="img-fluid" alt="">
+                    <p class="mt-2 mb-1">✦ Eternal Nightfall</p>
+                    <small>Black Metal • 3.2k plays</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
