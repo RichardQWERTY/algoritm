@@ -1,0 +1,111 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ track.title }} — echoOfSound{% endblock %}
+
+{% block content %}
+<div style="margin-top: 2rem;">
+    <div class="track-detail-container">
+        <!-- Основная информация о треке -->
+        <div class="track-detail-main">
+            <img src="{{ track.cover.url|default:'https://via.placeholder.com/800x400/0a0a0a/8b0000?text=NO+COVER' }}"
+                 alt="{{ track.title }}"
+                 class="track-detail-cover">
+
+            <div class="track-detail-info">
+                <div class="genre-badge">{{ track.genre.name }}</div>
+                <h1 class="track-detail-title">{{ track.title }}</h1>
+                <div class="track-detail-meta">
+                    <p>
+                        Артист:
+                        <a href="{% url 'profile' track.author.username %}" style="color: var(--primary-color); text-decoration: none;">
+                            {{ track.author.username }}
+                        </a>
+                    </p>
+                    <p>Загружен: {{ track.created_at|date:"d.m.Y" }}</p>
+                    <p>Прослушиваний: {{ track.plays_count }}</p>
+                    {% if track.duration %}
+                    <p>Длительность: {{ track.duration }} сек</p>
+                    {% endif %}
+                </div>
+
+                <!-- Аудиоплеер -->
+                <audio controls style="width: 100%; margin: 1.5rem 0;">
+                    <source src="{{ track.audio_file.url }}" type="audio/mpeg">
+                    Ваш браузер не поддерживает аудио элемент.
+                </audio>
+
+                <div class="track-actions">
+                    <button class="btn btn-primary">Лайк</button>
+                    <button class="btn btn-outline">Добавить в плейлист</button>
+                    {% if track.downloads_allowed %}
+                    <a href="{{ track.audio_file.url }}" download class="btn btn-outline">Скачать</a>
+                    {% endif %}
+                    {% if user.is_authenticated and user == track.author %}
+                    <a href="{% url 'track_delete' track.slug %}" class="btn btn-outline" style="border-color: #dc2626; color: #dc2626;">
+                        Удалить трек
+                    </a>
+                    {% endif %}
+                </div>
+
+                {% if track.description %}
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-light);">Описание</h3>
+                    <p style="color: var(--text-muted); line-height: 1.6;">{{ track.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Боковая панель -->
+        <div>
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-light);">Информация</h3>
+                <ul style="list-style: none; padding: 0; color: var(--text-muted);">
+                    <li style="margin-bottom: 0.75rem;"><strong>Жанр:</strong> {{ track.genre.name }}</li>
+                    <li style="margin-bottom: 0.75rem;"><strong>Формат:</strong> MP3</li>
+                    <li style="margin-bottom: 0.75rem;"><strong>Публичный:</strong> {% if track.is_public %}Да{% else %}Нет{% endif %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Комментарии -->
+    <div class="comments-section">
+        <h2 style="margin-bottom: 1.5rem; color: var(--text-light);">Комментарии ({{ comments.count }})</h2>
+
+        {% if user.is_authenticated %}
+        <form method="post" style="margin-bottom: 2rem;">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea name="text"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Оставьте комментарий..."
+                          required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+        {% else %}
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">
+            <a href="{% url 'login' %}" style="color: var(--primary-color);">Войдите</a>, чтобы оставить комментарий
+        </p>
+        {% endif %}
+
+        {% for comment in comments %}
+        <div class="comment">
+            <div class="comment-header">
+                <span class="comment-author">
+                    <a href="{% url 'profile' comment.user.username %}" style="color: var(--text-light); text-decoration: none;">
+                        {{ comment.user.username }}
+                    </a>
+                </span>
+                <span class="comment-time">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            <p class="comment-text">{{ comment.text }}</p>
+        </div>
+        {% empty %}
+        <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Комментариев пока нет</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}echoOfSound — Платформа тёмной музыки{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">echoOfSound</h1>
+    <p class="hero-description">
+        Платформа для загрузки и прослушивания музыки в тёмных жанрах.
+        Погрузитесь в мир готической музыки, black metal, dark ambient и других мрачных звуков.
+    </p>
+    <div class="btn-group">
+        {% if user.is_authenticated %}
+            <a href="{% url 'track_list' %}" class="btn btn-primary">Обзор треков</a>
+            <a href="{% url 'my_profile' %}" class="btn btn-outline">Мой профиль</a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary">Регистрация</a>
+            <a href="{% url 'login' %}" class="btn btn-outline">Вход</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if popular_tracks %}
+<div style="margin-top: 4rem;">
+    <h2 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-light);">Популярные треки</h2>
+    <div class="track-grid">
+        {% for track in popular_tracks %}
+        <div class="track-card">
+            <img src="{{ track.cover.url|default:'https://via.placeholder.com/300x200/0a0a0a/8b0000?text=NO+COVER' }}"
+                 alt="{{ track.title }}"
+                 class="track-cover">
+            <div class="track-info">
+                <div class="genre-badge">{{ track.genre.name }}</div>
+                <h3 class="track-title">{{ track.title }}</h3>
+                <p class="track-author">{{ track.author.username }}</p>
+                <div class="track-stats">
+                    <span>{{ track.plays_count }} прослушиваний</span>
+                </div>
+                <a href="{% url 'track_detail' track.slug %}" class="btn btn-primary" style="width: 100%;">Слушать</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if genres %}
+<div style="margin-top: 4rem;">
+    <h2 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-light);">Жанры</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        {% for genre in genres %}
+        <a href="{% url 'genre_detail' genre.slug %}"
+           class="genre-badge"
+           style="font-size: 1rem; padding: 0.75rem 1.5rem; text-decoration: none; transition: all 0.2s;">
+            {{ genre.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}echoOfSound - Dark Music Platform{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">echoOfSound</h1>
+    <p class="hero-description">
+        A sanctuary for dark souls. Share your music, discover underground tracks, and connect with artists who embrace the shadows.
+    </p>
+    <div class="btn-group">
+        {% if user.is_authenticated %}
+            <a href="{% url 'track_list' %}" class="btn btn-primary">Browse Tracks</a>
+            <a href="#" class="btn btn-outline">Upload Track</a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary">Join Us</a>
+            <a href="{% url 'track_list' %}" class="btn btn-outline">Explore</a>
+        {% endif %}
+    </div>
+</div>
+
+<div style="margin-top: 4rem;">
+    <h2 style="color: var(--primary-color); margin-bottom: 2rem; font-size: 2rem; text-transform: uppercase; letter-spacing: 2px;">Popular Tracks</h2>
+
+    <div class="track-grid">
+        {% for track in popular_tracks %}
+        <div class="track-card">
+            {% if track.cover %}
+                <img src="{{ track.cover.url }}" class="track-cover" alt="{{ track.title }}">
+            {% else %}
+                <div class="track-cover"></div>
+            {% endif %}
+            <div class="track-info">
+                <span class="genre-badge">{{ track.genre.name|default:"Unknown" }}</span>
+                <h3 class="track-title">{{ track.title }}</h3>
+                <p class="track-author">by {{ track.author.username }}</p>
+                <div class="track-stats">
+                    <span>{{ track.plays_count }} plays</span>
+                    <span>{{ track.likes.count }} likes</span>
+                </div>
+                <a href="{% url 'track_detail' track.slug %}" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Listen</a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
+            <h3 style="color: var(--text-muted); margin-bottom: 1rem;">No tracks yet</h3>
+            <p style="color: var(--text-muted);">Be the first to upload music to the void.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 6rem; margin-bottom: 4rem;">
+    <div style="background-color: var(--bg-card); padding: 2rem; border: 1px solid var(--border-color); border-radius: 12px; text-align: center;">
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Listen</h3>
+        <p style="color: var(--text-muted); line-height: 1.6;">Discover underground tracks from independent artists who create music in the darkness.</p>
+    </div>
+    <div style="background-color: var(--bg-card); padding: 2rem; border: 1px solid var(--border-color); border-radius: 12px; text-align: center;">
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Upload</h3>
+        <p style="color: var(--text-muted); line-height: 1.6;">Share your dark creations with a community that understands your artistic vision.</p>
+    </div>
+    <div style="background-color: var(--bg-card); padding: 2rem; border: 1px solid var(--border-color); border-radius: 12px; text-align: center;">
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Connect</h3>
+        <p style="color: var(--text-muted); line-height: 1.6;">Engage with fellow artists and listeners who share your passion for dark music.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ playlist.title }} — echoOfSound{% endblock %}
+
+{% block content %}
+<div style="margin-top: 2rem;">
+    <div style="background: var(--bg-card); border: 2px solid var(--primary-color); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 2rem; align-items: start;">
+            <img src="{{ playlist.cover.url|default:'https://via.placeholder.com/250/0a0a0a/8b0000?text=PLAYLIST' }}"
+                 alt="{{ playlist.title }}"
+                 style="width: 250px; height: 250px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border-color);">
+
+            <div style="flex: 1;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-light);">{{ playlist.title }}</h1>
+                <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                    Создатель:
+                    <a href="{% url 'profile' playlist.user.username %}" style="color: var(--primary-color); text-decoration: none;">
+                        {{ playlist.user.username }}
+                    </a>
+                </p>
+                <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                    Создан: {{ playlist.created_at|date:"d.m.Y" }}
+                </p>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                    Треков: {{ playlist.playlisttrack_set.count }}
+                </p>
+
+                {% if playlist.description %}
+                <p style="color: var(--text-muted); line-height: 1.6; margin-top: 1rem;">{{ playlist.description }}</p>
+                {% endif %}
+
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary">Воспроизвести всё</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--text-light);">Треки в плейлисте</h2>
+
+    {% if playlist.playlisttrack_set.all %}
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+        {% for pt in playlist.playlisttrack_set.all %}
+        <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem;">
+            <span style="color: var(--text-muted); font-weight: 600; min-width: 30px;">{{ pt.order }}</span>
+            <img src="{{ pt.track.cover.url|default:'https://via.placeholder.com/60/0a0a0a/8b0000?text=NO' }}"
+                 alt="{{ pt.track.title }}"
+                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+            <div style="flex: 1;">
+                <h4 style="color: var(--text-light); margin-bottom: 0.25rem;">
+                    <a href="{% url 'track_detail' pt.track.slug %}" style="color: var(--text-light); text-decoration: none;">
+                        {{ pt.track.title }}
+                    </a>
+                </h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    <a href="{% url 'profile' pt.track.author.username %}" style="color: var(--text-muted); text-decoration: none;">
+                        {{ pt.track.author.username }}
+                    </a>
+                </p>
+            </div>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">{{ pt.track.plays_count }} прослушиваний</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+        <p style="font-size: 1.25rem;">В плейлисте пока нет треков</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -4,92 +4,105 @@
 
 {% block content %}
 
-<div class="container mt-4">
-
+<div style="margin-top: 2rem;">
     <!-- Верхняя часть профиля -->
-    <div style="background: linear-gradient(#4B0082, #2a004d); padding: 20px; border: 4px solid #00ff9f; margin-bottom: 20px;">
-        <div class="d-flex flex-wrap align-items-start gap-4">
-            
+    <div style="background: linear-gradient(135deg, var(--bg-card) 0%, var(--secondary-color) 100%); padding: 2rem; border: 2px solid var(--primary-color); border-radius: 12px; margin-bottom: 2rem;">
+        <div style="display: flex; flex-wrap: wrap; align-items: start; gap: 2rem;">
+
             <!-- Аватар -->
             <div>
-                <img src="{{ profile.avatar.url|default:'https://via.placeholder.com/250/4B0082/00ff9f?text=AVATAR' }}" 
-                     class="border border-4 border-light shadow" 
+                {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}"
+                     style="border: 3px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"
                      width="250" height="250" alt="avatar">
+                {% else %}
+                <img src="https://via.placeholder.com/250/0a0a0a/8b0000?text=AVATAR"
+                     style="border: 3px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"
+                     width="250" height="250" alt="avatar">
+                {% endif %}
             </div>
 
             <!-- Информация -->
             <div style="flex: 1;">
-                <h1 class="neon-text" style="font-size: 2.8rem; margin-bottom: 5px;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-light);">
                     {{ profile.user.first_name }} {{ profile.user.last_name }}
                 </h1>
-                <h3 style="color: #00ff9f; margin-bottom: 15px;">
+                <h3 style="color: var(--primary-color); margin-bottom: 1.5rem; font-size: 1.5rem;">
                     @{{ profile.user.username }}
                 </h3>
-                
-                <p><strong>Location:</strong> {{ profile.location|default:"Не указано" }}</p>
+
+                <p style="margin-bottom: 0.5rem;"><strong>Местоположение:</strong> {{ profile.location|default:"Не указано" }}</p>
                 {% if profile.website %}
-                    <p><strong>Website:</strong> 
-                        <a href="{{ profile.website }}" target="_blank" style="color:#ff00ff;">{{ profile.website }}</a>
+                    <p style="margin-bottom: 0.5rem;"><strong>Сайт:</strong>
+                        <a href="{{ profile.website }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">{{ profile.website }}</a>
                     </p>
                 {% endif %}
 
-                <p><strong>Joined:</strong> {{ profile.created_at|date:"d.m.Y" }}</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Регистрация:</strong> {{ profile.created_at|date:"d.m.Y" }}</p>
             </div>
 
             <!-- Кнопки действий -->
-            <div>
-                <button class="btn btn-outline-light btn-lg mb-2" style="width: 180px;">
-                    <i class="bi bi-person-plus"></i> Add to Friends
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% if user.is_authenticated and user.username == profile.user.username %}
+                <a href="{% url 'track_upload' %}" class="btn btn-primary" style="width: 180px; text-align: center;">
+                    Загрузить трек
+                </a>
+                {% else %}
+                <button class="btn btn-outline" style="width: 180px;" disabled>
+                    Добавить в друзья
                 </button>
-                <button class="btn btn-danger btn-lg mb-2" style="width: 180px;">
-                    Send Message
+                <button class="btn btn-primary" style="width: 180px;" disabled>
+                    Отправить сообщение
                 </button>
-                <button class="btn btn-outline-success btn-lg" style="width: 180px;">
-                    <i class="bi bi-headphones"></i> Play Track
-                </button>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- BIO -->
-    <div class="row">
-        <div class="col-lg-8">
-            <div style="background:rgba(0,0,0,0.8); padding:20px; border:3px solid #9F00FF;">
-                <h2 class="neon-text">ABOUT ME</h2>
-                <p style="font-size: 1.1rem; line-height: 1.6;">
-                    {{ profile.bio|default:"Этот пользователь пока ничего не рассказал о себе..." }}
-                </p>
-            </div>
+    <!-- BIO и статистика -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+        <div style="background: var(--bg-card); padding: 2rem; border: 2px solid var(--border-color); border-radius: 12px;">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.75rem;">О себе</h2>
+            <p style="font-size: 1.1rem; line-height: 1.6; color: var(--text-muted);">
+                {{ profile.bio|default:"Этот пользователь пока ничего не рассказал о себе..." }}
+            </p>
         </div>
 
-        <!-- Правая колонка -->
-        <div class="col-lg-4">
-            <div style="background:rgba(0,0,0,0.8); padding:20px; border:3px solid #00ff9f;">
-                <h2 style="color:#00ff9f;">STATS</h2>
-                <ul style="list-style:none; padding:0;">
-                    <li><strong>Tracks uploaded:</strong> 12</li>
-                    <li><strong>Playlists:</strong> 7</li>
-                    <li><strong>Followers:</strong> 248</li>
-                    <li><strong>Following:</strong> 89</li>
-                </ul>
-            </div>
+        <div style="background: var(--bg-card); padding: 2rem; border: 2px solid var(--border-color); border-radius: 12px;">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.75rem;">Статистика</h2>
+            <ul style="list-style: none; padding: 0; color: var(--text-muted);">
+                <li style="margin-bottom: 0.75rem;"><strong>Загружено треков:</strong> {{ user_tracks.count }}</li>
+                <li style="margin-bottom: 0.75rem;"><strong>Плейлистов:</strong> 0</li>
+                <li style="margin-bottom: 0.75rem;"><strong>Подписчиков:</strong> 0</li>
+                <li style="margin-bottom: 0.75rem;"><strong>Подписок:</strong> 0</li>
+            </ul>
         </div>
     </div>
 
     <!-- Последние треки пользователя -->
-    <div class="mt-5">
-        <h2 class="neon-text">LAST UPLOADS</h2>
-        <div class="row">
-            <!-- Здесь можно будет выводить треки пользователя через цикл -->
-            <div class="col-md-4 mb-4">
-                <div style="background:#1a0033; padding:10px; border:2px solid #ff00ff;">
-                    <img src="https://via.placeholder.com/300x150" class="img-fluid" alt="">
-                    <p class="mt-2 mb-1">✦ Eternal Nightfall</p>
-                    <small>Black Metal • 3.2k plays</small>
+    {% if user_tracks %}
+    <div>
+        <h2 style="color: var(--text-light); margin-bottom: 1.5rem; font-size: 2rem;">Последние загрузки</h2>
+        <div class="track-grid">
+            {% for track in user_tracks %}
+            <div class="track-card">
+                <img src="{{ track.cover.url|default:'https://via.placeholder.com/300x200/0a0a0a/8b0000?text=NO+COVER' }}"
+                     alt="{{ track.title }}"
+                     class="track-cover">
+                <div class="track-info">
+                    <div class="genre-badge">{{ track.genre.name }}</div>
+                    <h3 class="track-title">{{ track.title }}</h3>
+                    <p class="track-author">{{ track.author.username }}</p>
+                    <div class="track-stats">
+                        <span>{{ track.plays_count }} прослушиваний</span>
+                    </div>
+                    <a href="{% url 'track_detail' track.slug %}" class="btn btn-primary" style="width: 100%;">Слушать</a>
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
+    {% endif %}
 
 </div>
 

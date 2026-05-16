@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Все треки - EchoOfSound{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Все треки</h1>
+        <p class="text-muted">Найдено треков: {{ tracks.count }}</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Поиск по названию или автору" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="genre" class="form-select">
+                    <option value="">Все жанры</option>
+                    {% for genre in genres %}
+                        <option value="{{ genre.id }}" {% if request.GET.genre == genre.id|stringformat:"s" %}selected{% endif %}>
+                            {{ genre.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Найти</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for track in tracks %}
+    <div class="col-md-4 mb-4">
+        <div class="card track-card">
+            {% if track.cover %}
+                <img src="{{ track.cover.url }}" class="track-cover" alt="{{ track.title }}">
+            {% else %}
+                <div class="track-cover d-flex align-items-center justify-content-center">
+                    <span style="font-size: 3rem;">🎵</span>
+                </div>
+            {% endif %}
+            <div class="card-body track-info">
+                <h5 class="track-title">{{ track.title }}</h5>
+                <p class="track-author">{{ track.author.username }}</p>
+                {% if track.genre %}
+                    <span class="genre-badge">{{ track.genre.name }}</span>
+                {% endif %}
+                <div class="track-stats">
+                    <span>▶️ {{ track.plays_count }}</span>
+                    <span>❤️ {{ track.likes.count }}</span>
+                    <span>💬 {{ track.comments.count }}</span>
+                </div>
+                <a href="{% url 'track_detail' track.slug %}" class="btn btn-primary btn-sm mt-3 w-100">Слушать</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <h4>Треки не найдены</h4>
+            <p>Попробуйте изменить параметры поиска</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
